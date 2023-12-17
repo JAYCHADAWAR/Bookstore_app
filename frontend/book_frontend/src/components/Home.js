@@ -1,5 +1,5 @@
 import React from 'react';
-import  { useState,useEffect } from 'react';
+import  { useState,useEffect,useRef } from 'react';
 import io from 'socket.io-client';
 import '../CSS/Home.css';
 
@@ -7,7 +7,7 @@ import '../CSS/Home.css';
 
 const Home = () => {
   const [books, setBooks] = useState([]);
-
+ const booksRef = useRef(books); 
   const fetchBooks = async () => {
     console.log('in fetch books');
     try {
@@ -25,6 +25,7 @@ const Home = () => {
   
       const data = await response.json();
       setBooks(data.books);
+      booksRef.current=data.books;
       console.log(data); 
     
 
@@ -38,24 +39,39 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    
+    console.log(books);
     const socket = io('http://localhost:3001');     
-    socket.on('bookLiked', () => {
+    socket.on('bookLiked', ({bookId,final_value}) => {
+      console.log(bookId);
+      console.log(final_value);
       console.log(`Book was liked by other users,refetching books`);
-      fetchBooks();
-    });
+      console.log(booksRef.current);
+      const bookIndex = booksRef.current.findIndex(book => book.id === bookId);
 
+      if (bookIndex !== -1) {
+          
+           const updatedBooks = [...booksRef.current];
+           updatedBooks[bookIndex].likes=String(final_value);
+           console.log('updated books',updatedBooks);
+           setBooks(updatedBooks);     
+      }
+    });
+   
         return () => {
       socket.disconnect();
     };
   }, []);
 
+  useEffect(() => {
+    booksRef.current=books;
+    console.log('state change',books);
+    console.log('ref',booksRef.current); 
+  }, [books]);
 
   const handleLikeClick = async (bookId,liked) => {
     try {
      
-      // console.log('in handle fucntion',bookId);
-      // console.log('in handle fucntion',liked);
+     
       const backendUrl = 'http://localhost:3001';
       const socket = io(backendUrl);
       
@@ -86,7 +102,6 @@ const Home = () => {
       {
         console.log('updated');
       }
-      
       const bookIndex = books.findIndex(book => book.id === bookId);
 
      if (bookIndex !== -1) {
@@ -98,23 +113,16 @@ const Home = () => {
           updatedBooks[bookIndex].likes=String(final_value);
           console.log('updated books',updatedBooks);
           setBooks(updatedBooks);
-          socket.emit('likeBook',({bookId,liked}));
+
+          socket.emit('likeBook',({bookId,final_value}));
            
      }
-      
       
     } catch (error) {
       console.error('Error updating like status:', error);
     }
   };
-  
 
-  
-
-
-  
- 
-  
   return (
     <div>
      <h1 style={{ display: 'flex',justifyContent: 'center' }}>Books</h1>
