@@ -87,9 +87,21 @@ const Home = () => {
         console.log('updated');
       }
       
-      fetchBooks();
-      socket.emit('likeBook');
-      //socket.close();
+      const bookIndex = books.findIndex(book => book.id === bookId);
+
+     if (bookIndex !== -1) {
+         
+          const updatedBooks = [...books];
+          updatedBooks[bookIndex].liked = !liked;
+          let final_value=parseInt(updatedBooks[bookIndex].likes,10);
+          final_value += !liked ? 1 : -1;
+          updatedBooks[bookIndex].likes=String(final_value);
+          console.log('updated books',updatedBooks);
+          setBooks(updatedBooks);
+          socket.emit('likeBook',({bookId,liked}));
+           
+     }
+      
       
     } catch (error) {
       console.error('Error updating like status:', error);
