@@ -1,4 +1,3 @@
-
 const express = require('express');
 const socketio = require('socket.io');
 const session = require('express-session');
@@ -261,10 +260,15 @@ io.on('connection', (socket) => {
     socket.on('disconnect', (socket) => {
         console.log('A user disconnected',socket.id);
       });
-    socket.on('likeBook', () => {
+    socket.on('likeBook', ({bookId,final_value}) => {
         console.log('likebook event recieved',socket.id);
-        io.emit('bookLiked'); 
+        console.log(bookId);
+        console.log(final_value);
+        io.emit('bookLiked',({bookId,final_value})); 
     });
 });
+
+
+
 
 
