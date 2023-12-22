@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../CSS/Navbar.css'; 
-const Navbar = ({ isLoggedIn, handleSignOut }) => {
+const Navbar = ({ isLoggedIn,isAdmin,handleAdminSignOut, handleSignOut }) => {
   return (
     <nav>
        
@@ -12,7 +12,13 @@ const Navbar = ({ isLoggedIn, handleSignOut }) => {
               Bookstore
           </div>
       <div style={{ display: 'flex',justifyContent: 'flex-end'  }}>
-          
+        {isAdmin ? (
+          <>
+          <Link to ='/Admin' className="nav-link home">Admin</Link>
+          <Link to='/Admin_logout' onClick={handleAdminSignOut} className='nav-link logout'>logout</Link>
+          </>
+        ):null}
+
         {isLoggedIn ? (
           <>
             <Link to="/home" className="nav-link home">Home</Link>
@@ -21,9 +27,14 @@ const Navbar = ({ isLoggedIn, handleSignOut }) => {
           </>
         ) : (
           <>
-            <Link to="/signin" className="nav-link tabs">Sign In</Link>
-            <Link to="/signup" className="nav-link tabs">Sign Up</Link>
-          </>
+              {!isAdmin && (
+                <>
+                  <Link to='/Admin_signin' className="nav-link home">Admin login</Link>
+                  <Link to="/signin" className="nav-link tabs">Sign In</Link>
+                  <Link to="/signup" className="nav-link tabs">Sign Up</Link>
+                </>
+              )}
+            </>
         )}
       </div>
       </div>

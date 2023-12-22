@@ -65,13 +65,14 @@ const Home = () => {
   useEffect(() => {
     booksRef.current=books;
     console.log('state change',books);
-    console.log('ref',booksRef.current); 
+    console.log('ref',booksRef.current); // This will log the updated books whenever the 'books' state changes
   }, [books]);
 
   const handleLikeClick = async (bookId,liked) => {
     try {
      
-     
+      // console.log('in handle fucntion',bookId);
+      // console.log('in handle fucntion',liked);
       const backendUrl = 'http://localhost:3001';
       const socket = io(backendUrl);
       
@@ -122,7 +123,8 @@ const Home = () => {
       console.error('Error updating like status:', error);
     }
   };
-
+  
+  
   return (
     <div>
      <h1 style={{ display: 'flex',justifyContent: 'center' }}>Books</h1>
