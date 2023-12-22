@@ -14,7 +14,8 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 RUN npm install -g nodemon
-COPY app.js connection.js ./
+COPY app.js fileupload.js connection.js ./
+
 
 
 EXPOSE 3001
