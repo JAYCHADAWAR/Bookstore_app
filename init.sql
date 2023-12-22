@@ -1,10 +1,9 @@
-
-
+ 
 --uuid extension 
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
---users craete table query
+--users create table query
 
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
@@ -40,5 +39,19 @@ CREATE TABLE user_likes (
     bookid UUID NOT NULL,
     userid UUID NOT NULL
 );
+
+
+--create admin table
+
+CREATE TABLE admin (
+    id UUID PRIMARY KEY,
+    admin_name VARCHAR(100) NOT NULL,
+    admin_email VARCHAR(100) UNIQUE NOT NULL,
+    admin_password VARCHAR(100) NOT NULL
+);
+
+--insert query for admin
+INSERT INTO admin (id, admin_name, admin_email, admin_password)
+VALUES (uuid_generate_v4(), 'Admin', 'admin@gmail.com', 'a');
 
 
