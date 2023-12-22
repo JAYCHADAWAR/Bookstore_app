@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const app = express();
 const jwt = require('jsonwebtoken');
 
-const {pool}=require('./connection.js')
+const {pool,knexInstance}=require('./connection.js')
 const path = require('path');
 app.use(session({
     secret: 'random',
@@ -16,11 +16,13 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000 
       }
   }));
+const upload = require('./fileupload.js');
+
   
 app.use(express.json()); 
 const corsOptions = {
   origin: 'http://localhost:3000',
-  methods: 'GET,POST',
+  methods: 'GET,POST,PATCH,DELETE',
   allowedHeaders: 'Content-Type,Authorization',
 };
 app.use(cors(corsOptions));
@@ -45,7 +47,7 @@ const verifyToken = (req, res, next) => {
   jwt.verify(token, secretKey, (err, decoded) => {
     if (err) return res.status(403).send('Invalid token'); 
     req.user = decoded; 
-    // console.log('userid:',req.user.id);
+    console.log('jwt userid:',req.user.id);
     next(); 
   });
 };
@@ -112,6 +114,34 @@ app.post('/signin', async (req, res) => {
       
 });
 
+app.post('/admin_signin', async (req, res) => {
+  try{
+    const {email, password } = req.body;
+    console.log('request',req.body);
+   
+    const adminExists = await pool.query('SELECT id FROM admin WHERE admin_email = $1 AND admin_password = $2', [email, password]);
+    console.log(adminExists);
+
+    if (adminExists.rows.length === 1) {
+      console.log(adminExists.rows[0]);
+
+      req.session.isLoggedIn = true;
+     
+      console.log('id:',adminExists.rows[0].id);
+      const admin = { id: adminExists.rows[0].id};
+      const token = jwt.sign(admin, secretKey, { expiresIn: '1h' });
+      console.log('admin signin token:',token);
+      res.status(201).json({ message: 'admin signed in successfully',token: token });
+    }
+    else{
+        return res.status(400).json({ error: 'Invalid credentials of admin' });
+    }
+  }catch(error){
+    res.status(500).json({ error: error});
+  }
+      
+});
+
 app.get('/getbooks',verifyToken, async (req,res) => {
     try {
         // console.log('in backend getbooks');
@@ -141,6 +171,120 @@ app.get('/getbooks',verifyToken, async (req,res) => {
     }catch(error){
         res.status(500).json({ error: error });
     }
+
+});
+
+//on admin page books listing
+app.get('/getallbooks', verifyToken, async ( req, res)=>{
+try{
+  if(req.user.id)
+  {
+    const books=await pool.query('select id,name,likes from books');
+  
+    res.status(200).json({ books: books.rows});
+
+  }
+}catch(error)
+{
+  res.status(500).json({ error: error });
+}
+
+app.delete('/deletebook',verifyToken, async(req, res) => {
+  try {
+  if(req.user.id)
+  {
+        
+        
+   
+          // Run a DELETE query using the pool
+          const deleteQuery = `DELETE FROM books WHERE id = $1`;
+          const result = await pool.query(deleteQuery, [req.body.id]);
+           console.log(result);
+          if (result.rowCount === 1) {
+            res.status(200).json({ message: 'Book deleted successfully' });
+          } else {
+            res.status(404).json({ message: 'Book not found' });
+          }
+  
+}else{
+  console.log('unauthorized');
+        res.status(401).json({ message: 'admin not authenticated' }); 
+}
+}catch (error) {
+  console.error('Error deleting book:', error);
+  res.status(500).json({ error: 'Internal Server Error' });
+}  
+
+});
+
+app.patch('/editbook',verifyToken,upload.fields([
+  { name: 'thumbnail', maxCount: 1 },
+  { name: 'pdf_file', maxCount: 1 }
+]),verifyToken,async(req,res)=>{
+try{
+ console.log('in editbook');
+ console.log(req.body);
+  let file1 = req?.files['thumbnail']?.[0]?.originalname || null;
+  let file2 = req?.files['pdf_file']?.[0]?.originalname || null;
+  console.log('bookname',req.body.name);
+  const updateobj={
+    name:req.body.name
+  };
+  console.log('file1',file1);
+  console.log('file2',file2);
+  if(file1!=null)
+  {
+    updateobj['image_path']=file1;
+  }
+  if(file2!=null)
+  {
+    updateobj['path']=file2;
+  }
+  console.log(updateobj);
+  await knexInstance('books').where({id:req.body.id}).update(updateobj);
+ console.log('updated details of file');
+ res.status(200).json({ message: 'Book deleted successfully' });
+}catch(error){
+  console.log(error);
+
+}
+
+
+});
+
+
+app.post('/uploadbook',upload.fields([
+  { name: 'thumbnail', maxCount: 1 },
+  { name: 'pdf_file', maxCount: 1 }
+]),verifyToken,async(req,res)=>{
+
+    console.log(req.user.id);
+    if(req.user.id)
+    {
+      // Access files via req.files and form fields via req.body
+      if (!req.files || !req.files['thumbnail'] || !req.files['pdf_file']) {
+        return res.status(400).json({ error: 'Thumbnail and PDF file are required' });
+      }
+      if (!req.files || Object.keys(req.files).length === 0) {
+       console.log('no files uploaded');
+      }
+     
+      const file1 = req.files['thumbnail'][0];
+      const file2 = req.files['pdf_file'][0];
+      console.log('bookname',req.body.name);
+      const id=uuidv4();
+      await pool.query(
+        'INSERT INTO books (id, name,likes,path,image_path) VALUES ($1, $2,$3,$4,$5)',
+        [id,req.body.name,'0',file2.originalname,file1.originalname]
+      );
+      res.status(200).json({ message: `Book was successfuly uploaded` });
+    }
+    else{
+      console.log('unauthorized');
+        res.status(401).json({ message: 'admin not authenticated' }); // Handle unauthenticated user
+    }
+});
+
 
 });
 
@@ -196,7 +340,7 @@ app.post('/setlike', async (req, res) => {
     }
   });
 
-  app.post('/updateuserbklikes',verifyToken, async (req, res) => {
+app.post('/updateuserbklikes',verifyToken, async (req, res) => {
     try {
       console.log('in like bookid');
       const { bookId,liked } = req.body;
@@ -221,6 +365,7 @@ app.post('/setlike', async (req, res) => {
       res.status(500).json({ error: error});
     }
   });
+
 
 
 app.post('/updateprofile',async(req,res) => {
