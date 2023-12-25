@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+ import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 const Admin_login = ({handleAdminLogin}) => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
       });
+      const navigate = useNavigate();
+     
+      
     
       const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -24,19 +29,26 @@ const Admin_login = ({handleAdminLogin}) => {
             body: JSON.stringify(formData)
           });
     
-          if (response.ok) {
+          if (response.status === 201) {
             const data = await response.json();
-            console.log(data.token);
+           
             localStorage.setItem('admintoken', data.token);
             handleAdminLogin();
             console.log('login successful');
+            alert('Login successful!');
+            navigate('/admin');
+          }else if (response.status === 400) {
+            const data = await response.json();
+            console.error('admin Failed to sign in:', data.message);
+            alert('Invalid credentials: ' + data.message);
           } else {
-            const errorData = await response.json(); 
-            console.error('admin Failed to sign in:', errorData.error);
-            alert( errorData.error);
+           
+            console.error('Unexpected error occurred');
+            alert('An unexpected error occurred. Please try again later.');
           }
         } catch (error) {
           console.error('Error:', error);
+          alert('An unexpected error occurred. Please try again later.');
         }
     };
   return (
