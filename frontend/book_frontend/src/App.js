@@ -10,11 +10,12 @@ import Navbar from './components/Navbar';
 import Admin from './components/Admin';
 import Admin_login from './components/Admin_login'
 
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const [isAdmin, setIsAdmin] = useState(false);
-
+ 
   
   useEffect(() => {
     const storedLoginStatus = localStorage.getItem('isLoggedIn');
@@ -29,7 +30,7 @@ function App() {
   }, []);
 
 
-
+  
   const handleAdminSignOut = async () => {
     setIsAdmin(false);
     localStorage.removeItem('isAdmin');
@@ -59,6 +60,7 @@ function App() {
         setIsLoggedIn(false);
         localStorage.removeItem('isLoggedIn');
        alert('you are logged out');
+
      
       } else {
        
@@ -75,10 +77,10 @@ function App() {
        <Navbar isLoggedIn={isLoggedIn} isAdmin={isAdmin} handleAdminSignOut={handleAdminSignOut} handleSignOut={handleSignOut} />
        
     <Routes>
-      <Route path='/Admin' element={isAdmin ? <Admin/> : <h1>admin is not logged in</h1>}/>
-      <Route path='/Admin_signin'  element ={!isAdmin ? <Admin_login handleAdminLogin={handleAdminLogin}/> : null}/>
-        <Route exact path="/home" element={isLoggedIn ? <Home /> : <h1>You are not loggedin</h1>}/>
-        <Route path="/profile" element={isLoggedIn ? <Profile /> : <h1>You are not loggedin</h1>}  />
+      <Route path='/Admin' element={isAdmin ? <Admin/> :<h1>Please login to view this page</h1>}/>
+      <Route path='/Admin_signin'  element ={!isAdmin ? <Admin_login handleAdminLogin={handleAdminLogin}/> : <h1>please login to view this page</h1>}/>
+        <Route exact path="/home" element={isLoggedIn ? <Home /> :<h1>please login to view this page</h1> }/>
+        <Route path="/profile" element={isLoggedIn ? <Profile /> : <h1>please login to view this page</h1>}  />
         <Route path="/signup"  element={!isLoggedIn ? <SignUp handleSignUp={handleSignUp}/> : null} />
         <Route path="/signin"  element={!isLoggedIn ? <SignIn handleSignUp={handleSignUp}/> : null}  />
     </Routes>
