@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SignIn = ({handleSignUp}) => {
     const [formData, setFormData] = useState({
@@ -10,6 +11,9 @@ const SignIn = ({handleSignUp}) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
       };
+
+
+      const navigate = useNavigate();
 
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,17 +27,22 @@ const SignIn = ({handleSignUp}) => {
             },
             body: JSON.stringify(formData)
           });
-    
-          if (response.ok) {
+        
+          if (response.status === 201) {
             const data = await response.json();
             console.log(data.token);
             localStorage.setItem('token', data.token);
             handleSignUp();
             console.log('login successful');
-          } else {
-            const errorData = await response.json(); 
-            console.error('Failed to sign in:', errorData.error);
-            alert( errorData.error);
+            navigate('/home');
+          } else if (response.status === 400) {
+            const errorData = await response.json();
+            console.error('Failed to sign up:', errorData.error);
+            alert('login failed: ' + errorData.error); 
+          } 
+          else {
+            console.error('Unexpected error occurred');
+            alert('An unexpected error occurred. Please try again later.'); 
           }
         } catch (error) {
           console.error('Error:', error);
