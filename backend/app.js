@@ -8,7 +8,6 @@ const jwt = require('jsonwebtoken');
 
 const {pool,knexInstance}=require('./connection.js')
 const path = require('path');
-
 app.use(session({
     secret: 'random',
     resave: false,
