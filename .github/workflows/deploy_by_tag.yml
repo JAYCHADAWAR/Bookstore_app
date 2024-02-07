@@ -20,7 +20,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ap-south-1
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -32,6 +32,6 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: bookstore-image
         run: |
-          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha}}"  --build-arg "AWS_DEFAULT_REGION=us-east-1"  --build-arg "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" --build-arg "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" ./backend
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha}}"  --build-arg "AWS_DEFAULT_REGION=ap-south-1"  --build-arg "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" --build-arg "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" ./backend
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" >> $GITHUB_OUTPUT
