@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-frontend
+spec:
+  replicas: 2 # Number of replicas/pods you want to run for the frontend
+  selector:
+    matchLabels:
+      app: frontend # Label selector to match pods belonging to this deployment
+  template:
+    metadata:
+      labels:
+        app: frontend # Label assigned to pods belonging to this deployment
+    spec:
+      containers:
+      - name: frontend
+        image: 425084230388.dkr.ecr.ap-south-1.amazonaws.com/bookstore-image:frontend-b345c9d9038fb1e70fe53519b76275eb6a93df67 # Docker image for your frontend application
+        ports:
+        - containerPort: 3000 # Port your frontend application listens on

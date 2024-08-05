@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-deployment
+spec:
+  replicas: 1 # For PostgreSQL, you usually run a single replica
+  selector:
+    matchLabels:
+      app: postgresql # Label selector to match pods belonging to this deployment
+  template:
+    metadata:
+      labels:
+        app: postgresql # Label assigned to pods belonging to this deployment
+    spec:
+      containers:
+      - name: postgresql
+        image: 425084230388.dkr.ecr.ap-south-1.amazonaws.com/bookstore-image:postgres-b345c9d9038fb1e70fe53519b76275eb6a93df67 # Docker image for your PostgreSQL database
+        ports:
+        - containerPort: 5432 # Port PostgreSQL listens on

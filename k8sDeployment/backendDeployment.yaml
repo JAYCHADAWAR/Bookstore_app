@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: 425084230388.dkr.ecr.ap-south-1.amazonaws.com/bookstore-image:backend-b345c9d9038fb1e70fe53519b76275eb6a93df67
+        ports:
+        - containerPort: 3001
